@@ -9,15 +9,13 @@ It is designed following **Clean Architecture** principles to ensure **maintaina
 
 - User registration and login with ASP.NET Core Identity
 - JWT-based authentication
-- Extensible `ApplicationUser` entity
 - Structured in Clean Architecture layers:
-  - **Domain**: Core entities (`ApplicationUser`, `RefreshToken`)
+  - **Domain**: Core entities 
   - **Application**: Business logic and services
-  - **Infrastructure**: Database (SQL Server), Identity, EF Core
+  - **Infrastructure**: Database, Identity, EF Core
   - **API**: REST endpoints
 - Ready for **CI/CD**, **Docker**, and **Azure deployment**
 - Includes unit and integration testing projects
-- Frontend example with **React + Vite**
 
 ---
 
