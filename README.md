@@ -23,16 +23,12 @@ It is designed following **Clean Architecture** principles to ensure **maintaina
 
 ## 📂 Project Structure
 
-AuthService/
-├── src/
-│ ├── AuthService.Api/ # API layer (controllers, config)
-│ ├── AuthService.Application/ # Business logic
-│ ├── AuthService.Domain/ # Domain entities
-│ ├── AuthService.Infrastructure/# EF Core, Identity, persistence
-├── frontend/ # React frontend
-├── tests/ # Unit and integration tests
-├── docs/ # Documentation (ADR, system design, requirements)
-├── .github/workflows/ # CI/CD pipelines
+AuthService/</br>
+├── src/ (source code) </br>
+├── frontend/ (ux/ui, user interactions, etc) </br>
+├── tests/ (unit and integration tests) </br>
+├── docs/ (documentation) </br>
+├── .github/workflows/ (pipelines) </br>
 
 ---
 
