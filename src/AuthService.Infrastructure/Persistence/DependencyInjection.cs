@@ -16,14 +16,20 @@ namespace AuthService.Infrastructure.Persistence
     /// </summary>
     public static class DependencyInjection
     {
+        /// <summary>
+        /// Encapsulates the Infrastructure configuration.
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="configuration"></param>
+        /// <returns></returns>
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration) 
         {
-            // SQL Server connection
+            // Database Configuration
             var connectionString = configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<AuthDbContext>(options => options.UseSqlServer(connectionString));
 
-            // ASP.NET Core Identity
-            services.AddIdentityCore<ApplicationUser>(options =>
+            // Identity Configuration
+            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 options.User.RequireUniqueEmail = true;
 
@@ -32,9 +38,11 @@ namespace AuthService.Infrastructure.Persistence
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;
                 options.Password.RequireUppercase = true;
+
+                options.User.RequireUniqueEmail = true;
             })
-                .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<AuthDbContext>();
+                .AddEntityFrameworkStores<AuthDbContext>()
+                .AddDefaultTokenProviders();
 
             return services;
         }
