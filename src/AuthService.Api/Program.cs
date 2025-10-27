@@ -1,14 +1,15 @@
 using AuthService.Infrastructure.Identity;
 using AuthService.Infrastructure.Identity.Seed;
+using AuthService.Infrastructure.Logging;
 using AuthService.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Logging configuration
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
+// Configure Serilog
+builder.Host.ConfigureSerilog(builder.Configuration);
 
 // Infrastrucute and DB configuration
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -24,59 +25,73 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+Log.Information("Starting up AuthService...");
+
 // App Builder
 var app = builder.Build();
 
-// Migrations and data seeds
-using (var scope = app.Services.CreateScope())
+try
 {
-    var services = scope.ServiceProvider;
-
-    // Gets logger factory
-    var loggerFactory = services.GetRequiredService<ILoggerFactory>();
-    var logger = loggerFactory.CreateLogger("Seeder");
-
-    if (app.Environment.IsDevelopment())
+    // Migrations and data seeds
+    using (var scope = app.Services.CreateScope())
     {
-        try
+        var services = scope.ServiceProvider;
+
+        // Gets logger factory
+        var logger = Log.ForContext<Program>();
+
+        if (app.Environment.IsDevelopment())
         {
-            // Automatic database migration
-            var context = services.GetRequiredService<AuthDbContext>();
-            await context.Database.MigrateAsync();
+            try
+            {
+                // Automatic database migration
+                var context = services.GetRequiredService<AuthDbContext>();
+                await context.Database.MigrateAsync();
 
-            // Identity managers
-            var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-            var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+                // Identity managers
+                var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+                var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
 
-            // Execute seeders
-            await DefaultRolesSeeder.SeedAsync(roleManager, logger);
-            await DefaultAdminSeeder.SeedAsync(userManager, logger);
+                // Execute seeders
+                await DefaultRolesSeeder.SeedAsync(roleManager, logger);
+                await DefaultAdminSeeder.SeedAsync(userManager, logger);
 
-            logger.LogInformation("Database migrated and seeded successfully.");
+                logger.Information("Database migrated and seeded successfully.");
 
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Error while migrating or seeding the database.");
+                throw;
+            }
         }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error while migrating or seeding the database.");
-            throw;
-        }
+
     }
 
-}
+    // Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+    app.UseHttpsRedirection();
+
+    // Enables authentication and authorization
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    app.MapControllers();
+
+    app.Run();
+
+    Log.Information("AuthService stopped successfully.");
+}
+catch (Exception ex)
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    Log.Fatal(ex, "AuthService terminated unexpectedly.");
 }
-
-app.UseHttpsRedirection();
-
-// Enables authentication and authorization
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
+finally
+{
+    Log.CloseAndFlush();
+}

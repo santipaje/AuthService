@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,14 +22,14 @@ namespace AuthService.Infrastructure.Identity.Seed
         /// <param name="roleManager"></param>
         /// <param name="logger"></param>
         /// <returns></returns>
-        public static async Task SeedAsync(RoleManager<IdentityRole> roleManager, ILogger logger)
+        public static async Task SeedAsync(RoleManager<IdentityRole> roleManager, Serilog.ILogger logger)
         {
             foreach (var role in Roles)
             {
                 if (!await roleManager.RoleExistsAsync(role))
                 {
                     await roleManager.CreateAsync(new IdentityRole(role));
-                    logger.LogInformation("Role '{rolen}' created successfully", role);
+                    logger.Information("Role '{rolen}' created successfully", role);
                 }
             }
         }
