@@ -33,12 +33,30 @@ AuthService/</br>
 ## 🛠️ Getting Started
 
 ### Prerequisites
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- [SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads)
+- Install [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- Install [SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads)
+- Install EntityFramework tool
+```bash
+dotnet tool install --global dotnet-ef
+```
 
 ## Setup
  
- It is not created yet, this is a *TEMPLATE*.
+1. Clone the repository:
+```bash
+git clone https://github.com/santipaje/AuthService.git
+cd AuthService
+```
+
+2. Apply migrations
+```bash
+dotnet ef database update --project src/AuthService.Infrastructure
+```
+
+3. Run Api:
+```bash
+dotnet run --project src/AuthService.Api
+```
 
  ---
 

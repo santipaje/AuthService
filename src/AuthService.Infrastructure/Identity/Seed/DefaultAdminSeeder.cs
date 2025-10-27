@@ -19,7 +19,7 @@ namespace AuthService.Infrastructure.Identity.Seed
         /// <param name="userManager"></param>
         /// <param name="logger"></param>
         /// <returns></returns>
-        public static async Task SeedAsync(UserManager<ApplicationUser> userManager, ILogger logger)
+        public static async Task SeedAsync(UserManager<ApplicationUser> userManager, Serilog.ILogger logger)
         {
             var adminEmail = "admin@authservice.local";
             var adminPwd = "Admin1234!";
@@ -27,7 +27,7 @@ namespace AuthService.Infrastructure.Identity.Seed
             var existingAdmin = await userManager.FindByNameAsync(adminEmail);
             if (existingAdmin != null)
             {
-                logger.LogInformation("Default admin user already exists");
+                logger.Information("Default admin user already exists");
                 return;
             }
 
@@ -38,12 +38,12 @@ namespace AuthService.Infrastructure.Identity.Seed
             if (result.Succeeded)
             {
                 await userManager.AddToRoleAsync(adminUser, "Admin");
-                logger.LogInformation("Default admin user created successfully.");
+                logger.Information("Default admin user created successfully.");
             }
             else
             {
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                logger.LogError("Failed to create default admin user: {Errors}", errors);
+                logger.Error("Failed to create default admin user: {Errors}", errors);
             }
         }
     }
