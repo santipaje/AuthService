@@ -1,13 +1,11 @@
 ﻿using AuthService.Infrastructure.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace AuthService.Infrastructure.Persistence
 {
@@ -25,10 +23,33 @@ namespace AuthService.Infrastructure.Persistence
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration) 
         {
             // Database Configuration
-            var connectionString = configuration.GetConnectionString("DefaultConnection");
-            services.AddDbContext<AuthDbContext>(options => options.UseSqlServer(connectionString));
+            services.ConfigureDatabase(configuration);
 
             // Identity Configuration
+            services.ConfigureIdentity(configuration);
+
+            // JWT Configuration
+            services.ConfigureJwt(configuration);
+
+            return services;
+        }
+
+        /// <summary>
+        /// Database configuration
+        /// </summary>
+        private static void ConfigureDatabase(this IServiceCollection services, IConfiguration configuration)
+        {
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            services.AddDbContext<AuthDbContext>(options => options.UseSqlServer(connectionString));
+        }
+
+        /// <summary>
+        /// Identity configuration
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="configuration"></param>
+        private static void ConfigureIdentity(this IServiceCollection services, IConfiguration configuration)
+        {
             services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 options.User.RequireUniqueEmail = true;
@@ -43,8 +64,40 @@ namespace AuthService.Infrastructure.Persistence
             })
                 .AddEntityFrameworkStores<AuthDbContext>()
                 .AddDefaultTokenProviders();
+        }
 
-            return services;
+        /// <summary>
+        /// Jwt configuration
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="configuration"></param>
+        private static void ConfigureJwt(this IServiceCollection services, IConfiguration configuration)
+        {
+            var jwtSettingsSection = configuration.GetSection("JwtSettings");
+            services.Configure<JwtSettings>(jwtSettingsSection);
+
+            var jwtSettings = jwtSettingsSection.Get<JwtSettings>()!;
+            var key = Encoding.UTF8.GetBytes(jwtSettings.Key);
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = jwtSettings.Issuer,
+                        ValidAudience = jwtSettings.Audience,
+                        IssuerSigningKey = new SymmetricSecurityKey(key),
+                        ClockSkew = TimeSpan.Zero
+                    };
+                });
         }
     }
 }
