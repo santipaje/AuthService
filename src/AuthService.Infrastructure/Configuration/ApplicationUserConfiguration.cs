@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AuthService.Infrastructure.Persistence.Configurations
+namespace AuthService.Infrastructure.Configuration
 {
     /// <summary>
     /// ApplicationUser configuration

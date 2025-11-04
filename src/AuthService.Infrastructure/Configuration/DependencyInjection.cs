@@ -1,4 +1,5 @@
 ﻿using AuthService.Infrastructure.Identity;
+using AuthService.Application;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -6,8 +7,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using AuthService.Application.Interfaces;
+using AuthService.Infrastructure.Services;
+using AuthService.Infrastructure.Persistence;
 
-namespace AuthService.Infrastructure.Persistence
+namespace AuthService.Infrastructure.Configuration
 {
     /// <summary>
     /// This class focuses on Dependency Injection methods
@@ -30,6 +34,9 @@ namespace AuthService.Infrastructure.Persistence
 
             // JWT Configuration
             services.ConfigureJwt(configuration);
+
+            // Token Service
+            services.AddScoped<ITokenService, TokenService>();
 
             return services;
         }

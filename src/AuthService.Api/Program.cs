@@ -1,3 +1,4 @@
+using AuthService.Infrastructure.Configuration;
 using AuthService.Infrastructure.Identity;
 using AuthService.Infrastructure.Identity.Seed;
 using AuthService.Infrastructure.Logging;
