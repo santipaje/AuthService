@@ -1,5 +1,9 @@
-﻿using AuthService.Infrastructure.Identity;
-using AuthService.Application;
+﻿using AuthService.Application.Interfaces;
+using AuthService.Application.Validators;
+using AuthService.Infrastructure.Identity;
+using AuthService.Infrastructure.Persistence;
+using AuthService.Infrastructure.Services;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -7,9 +11,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using AuthService.Application.Interfaces;
-using AuthService.Infrastructure.Services;
-using AuthService.Infrastructure.Persistence;
 
 namespace AuthService.Infrastructure.Configuration
 {
@@ -51,6 +52,19 @@ namespace AuthService.Infrastructure.Configuration
             // Auth Service
             services.AddScoped<IAuthService, Services.AuthService>();
             
+            return services;
+        }
+
+        /// <summary>
+        /// Registers the application validators
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddValidators(this IServiceCollection services)
+        {
+            services.AddValidatorsFromAssembly(typeof(RegisterRequestValidator).Assembly);
+            services.AddValidatorsFromAssembly(typeof(LoginRequestValidator).Assembly);
+
             return services;
         }
 

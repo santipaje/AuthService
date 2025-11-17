@@ -11,15 +11,24 @@ using Serilog;
 
 namespace AuthService.Infrastructure.Services
 {
-    public class AuthService(UserManager<ApplicationUser> userManager, ITokenService tokenService, IOptions<JwtSettings> jwtSettings) : IAuthService
+    public class AuthService(UserManager<ApplicationUser> userManager, ITokenService tokenService, IValidator<RegisterRequestDto> registerValidator, IValidator<LoginRequestDto> loginValidator, IOptions<JwtSettings> jwtSettings) : IAuthService
     {
         private readonly UserManager<ApplicationUser> _userManager = userManager;
         private readonly ITokenService _tokenService = tokenService;
+        private readonly IValidator<RegisterRequestDto> _registerValidator = registerValidator;
+        private readonly IValidator<LoginRequestDto> _loginValidator = loginValidator;
         private readonly JwtSettings _jwtSettings = jwtSettings.Value;
 
         public async Task<RegisterResponseDto> RegisterAsync(RegisterRequestDto registerDto)
         {
             Log.Information("Registration attempt for {Email}", registerDto.Email);
+
+            var validation = await _registerValidator.ValidateAsync(registerDto);
+            if (!validation.IsValid)
+            {
+                Log.Warning("Registration validations failed: {Errors}", validation.Errors.Select(error => error.ErrorMessage));
+                throw new ValidationException(validation.Errors);
+            }
 
             var existing = await _userManager.FindByEmailAsync(registerDto.Email);
             if (existing != null)
@@ -55,6 +64,13 @@ namespace AuthService.Infrastructure.Services
         public async Task<AuthResponseDto?> LoginAsync(LoginRequestDto loginDto)
         {
             Log.Information("Login attempt for {Email}", loginDto.Email);
+
+            var validation = await _loginValidator.ValidateAsync(loginDto);
+            if (!validation.IsValid)
+            {
+                Log.Warning("Login validations failed: {Errors}", validation.Errors.Select(error => error.ErrorMessage));
+                throw new ValidationException(validation.Errors);
+            }
 
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
             if (user == null)
