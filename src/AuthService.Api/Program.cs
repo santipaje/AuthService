@@ -12,12 +12,14 @@ var builder = WebApplication.CreateBuilder(args);
 // Configure Serilog
 builder.Host.ConfigureSerilog(builder.Configuration);
 
-// Infrastrucute and DB configuration
+// Add Infrastrucute and DB configuration
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// TODO:
-// Adds applications services
-//builder.Services.AddApplicationServices();
+// Add Services
+builder.Services.AddApplicationServices();
+
+// Add Validators
+builder.Services.AddValidators();
 
 // Controllers
 builder.Services.AddControllers();
