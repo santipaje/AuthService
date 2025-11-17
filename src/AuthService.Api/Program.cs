@@ -12,12 +12,14 @@ var builder = WebApplication.CreateBuilder(args);
 // Configure Serilog
 builder.Host.ConfigureSerilog(builder.Configuration);
 
-// Infrastrucute and DB configuration
+// Add Infrastrucute and DB configuration
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// TODO:
-// Adds applications services
-//builder.Services.AddApplicationServices();
+// Add Services
+builder.Services.AddApplicationServices();
+
+// Add Validators
+builder.Services.AddValidators();
 
 // Controllers
 builder.Services.AddControllers();
@@ -38,9 +40,6 @@ try
     {
         var services = scope.ServiceProvider;
 
-        // Gets logger factory
-        var logger = Log.ForContext<Program>();
-
         if (app.Environment.IsDevelopment())
         {
             try
@@ -54,15 +53,15 @@ try
                 var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
 
                 // Execute seeders
-                await DefaultRolesSeeder.SeedAsync(roleManager, logger);
-                await DefaultAdminSeeder.SeedAsync(userManager, logger);
+                await DefaultRolesSeeder.SeedAsync(roleManager);
+                await DefaultAdminSeeder.SeedAsync(userManager);
 
-                logger.Information("Database migrated and seeded successfully.");
+                Log.Information("Database migrated and seeded successfully.");
 
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "Error while migrating or seeding the database.");
+                Log.Error(ex, "Error while migrating or seeding the database.");
                 throw;
             }
         }
