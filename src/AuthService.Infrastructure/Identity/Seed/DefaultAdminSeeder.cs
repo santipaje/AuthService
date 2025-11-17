@@ -31,7 +31,7 @@ namespace AuthService.Infrastructure.Identity.Seed
                 return;
             }
 
-            var adminUser = new ApplicationUser { UserName = adminEmail, Name = "Admin", Email = adminEmail, EmailConfirmed = true };
+            var adminUser = new ApplicationUser { UserName = adminEmail, FullName = "Admin", Email = adminEmail, EmailConfirmed = true };
 
             var result = await userManager.CreateAsync(adminUser, adminPwd);
 
