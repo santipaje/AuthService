@@ -38,9 +38,6 @@ try
     {
         var services = scope.ServiceProvider;
 
-        // Gets logger factory
-        var logger = Log.ForContext<Program>();
-
         if (app.Environment.IsDevelopment())
         {
             try
@@ -54,15 +51,15 @@ try
                 var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
 
                 // Execute seeders
-                await DefaultRolesSeeder.SeedAsync(roleManager, logger);
-                await DefaultAdminSeeder.SeedAsync(userManager, logger);
+                await DefaultRolesSeeder.SeedAsync(roleManager);
+                await DefaultAdminSeeder.SeedAsync(userManager);
 
-                logger.Information("Database migrated and seeded successfully.");
+                Log.Information("Database migrated and seeded successfully.");
 
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "Error while migrating or seeding the database.");
+                Log.Error(ex, "Error while migrating or seeding the database.");
                 throw;
             }
         }
