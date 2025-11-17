@@ -35,9 +35,22 @@ namespace AuthService.Infrastructure.Configuration
             // JWT Configuration
             services.ConfigureJwt(configuration);
 
+            return services;
+        }
+
+        /// <summary>
+        /// Registers the application services
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+        {
             // Token Service
             services.AddScoped<ITokenService, TokenService>();
 
+            // Auth Service
+            services.AddScoped<IAuthService, Services.AuthService>();
+            
             return services;
         }
 

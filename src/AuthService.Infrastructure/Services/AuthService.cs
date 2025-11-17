@@ -1,0 +1,83 @@
+﻿using AuthService.Application.Common.Constants;
+using AuthService.Application.DTOs.Requests;
+using AuthService.Application.DTOs.Responses;
+using AuthService.Application.Interfaces;
+using AuthService.Infrastructure.Identity;
+using AuthService.Infrastructure.Mappers;
+using FluentValidation;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
+using Serilog;
+
+namespace AuthService.Infrastructure.Services
+{
+    public class AuthService(UserManager<ApplicationUser> userManager, ITokenService tokenService, IOptions<JwtSettings> jwtSettings) : IAuthService
+    {
+        private readonly UserManager<ApplicationUser> _userManager = userManager;
+        private readonly ITokenService _tokenService = tokenService;
+        private readonly JwtSettings _jwtSettings = jwtSettings.Value;
+
+        public async Task<RegisterResponseDto> RegisterAsync(RegisterRequestDto registerDto)
+        {
+            Log.Information("Registration attempt for {Email}", registerDto.Email);
+
+            var existing = await _userManager.FindByEmailAsync(registerDto.Email);
+            if (existing != null)
+            {
+                Log.Warning("Registration failed: email {Email} already exists", registerDto.Email);
+                return new RegisterResponseDto() { Succeeded = false, Errors = [ErrorMessages.EmailAlreadyRegistered] };
+            }
+
+            var user = new ApplicationUser()
+            {
+                FullName = registerDto.Name,
+                UserName = registerDto.UserName,
+                Email = registerDto.Email,
+                CreatedTime = DateTime.UtcNow,
+                EmailConfirmed = true
+            };
+
+            var result = await _userManager.CreateAsync(user, registerDto.Password);
+            if (!result.Succeeded)
+            {
+                var errorDescriptionList = result.Errors.Select(error => error.Description).ToList();
+                Log.Error("Identity creation errors for {Email}: {Errors}", registerDto.Email, string.Join(", ", errorDescriptionList));
+                return new RegisterResponseDto() { Succeeded = false, Errors = errorDescriptionList };
+            }
+
+            await _userManager.AddToRoleAsync(user, RoleNames.User);
+
+            Log.Information("Registration successful for {Email}", registerDto.Email);
+
+            return new RegisterResponseDto() { Succeeded = true, Errors = [] };
+        }
+
+        public async Task<AuthResponseDto?> LoginAsync(LoginRequestDto loginDto)
+        {
+            Log.Information("Login attempt for {Email}", loginDto.Email);
+
+            var user = await _userManager.FindByEmailAsync(loginDto.Email);
+            if (user == null)
+            {
+                Log.Warning("Login failed: user {Email} not found", loginDto.Email);
+                return null;
+            }
+
+            var passwordValid = await _userManager.CheckPasswordAsync(user, loginDto.Password);
+            if (!passwordValid)
+            {
+                Log.Warning("Login failed: invalid credentials for {Email}", loginDto.Email);
+                return null;
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var userInfo = user.ToUserInfoDto(roles);
+            var token = _tokenService.GenerateToken(userInfo);
+            var expiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.DurationInMinutes);
+
+            Log.Information("Login successful for {Email}", loginDto.Email);
+
+            return new AuthResponseDto() { AccessToken = token, ExpiresAt = expiresAt, RefreshToken = string.Empty };
+        }
+    }
+}
