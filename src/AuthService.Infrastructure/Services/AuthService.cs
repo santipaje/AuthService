@@ -39,7 +39,7 @@ namespace AuthService.Infrastructure.Services
 
             var user = new ApplicationUser()
             {
-                FullName = registerDto.Name,
+                FullName = registerDto.FullName,
                 UserName = registerDto.UserName,
                 Email = registerDto.Email,
                 CreatedTime = DateTime.UtcNow,
