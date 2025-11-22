@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Identity.Data;
 
 namespace AuthService.UnitTests.Validators
 {
+    /// <summary>
+    /// Testing class for the Login Request Validator
+    /// </summary>
     public class LoginRequestValidatorTest
     {
         private readonly LoginRequestValidator _validator;
