@@ -9,71 +9,100 @@ using System.Security.Claims;
 
 namespace AuthService.UnitTests.Services
 {
+    /// <summary>
+    /// Testing class for the Token Service
+    /// </summary>
     public class TokenServiceTests
     {
-        private readonly JwtSecurityTokenHandler _handler;
-
-        public TokenServiceTests()
+        /// <summary>
+        /// Set up the context
+        /// </summary>
+        private static class TestContext
         {
-            _handler = new();
-        }
+            public static JwtSecurityTokenHandler Handler { get; } = new();
 
-        private TokenService CreateTokenService(JwtSettings? jwtSettings = null)
-        {
-            var defaultJwtSettings = new JwtSettings
+            public static readonly JwtSettings DefaultSettings = new()
             {
-                Issuer = "AuthService",
-                Audience = "AuthServiceClient",
+                Issuer = "AuthTest",
+                Audience = "AuthTest",
                 Key = "THIS_IS_A_TEST_KEY_FOR_UNIT_TESTS_123!",
                 DurationInMinutes = 60,
             };
 
-            return new TokenService(Options.Create(jwtSettings ?? defaultJwtSettings));
-        }
-
-        private UserInfoDto CreateUserInfoDto(IList<string> roles)
-        {
-            return new UserInfoDto
+            /// <summary>
+            /// Creates System Under Test
+            /// </summary>
+            /// <param name="settings"></param>
+            /// <returns></returns>
+            public static TokenService CreateSut(JwtSettings? settings = null)
             {
-                Id = "1",
-                FullName = "test-full-name",
-                UserName = "test-user-name",
-                Email = "user@test.com",
-                Roles = roles
-            };
+                return new TokenService(Options.Create(settings ?? DefaultSettings));
+            }
+
+            /// <summary>
+            /// Create User DTO
+            /// </summary>
+            /// <param name="roles"></param>
+            /// <returns></returns>
+            public static UserInfoDto CreateUser(IList<string>? roles = null)
+            {
+                return new UserInfoDto
+                {
+                    Id = "1",
+                    FullName = "test-full-name",
+                    UserName = "test-user-name",
+                    Email = "user@test.com",
+                    Roles = roles ?? []
+                };
+            }
+
+            /// <summary>
+            /// Auxiliar method to read token
+            /// </summary>
+            /// <param name="token"></param>
+            /// <returns></returns>
+            public static JwtSecurityToken ReadToken(string token)
+            {
+                return Handler.ReadJwtToken(token);
+            }
         }
 
         [Fact]
         public void GenerateToken_Should_Return_Valid_Jwt_With_Expected_Claims()
         {
             // Arrange
-            var tokenService = CreateTokenService();
-            var user = CreateUserInfoDto(["Admin"]);
+            var sut = TestContext.CreateSut();
+            var user = TestContext.CreateUser(["Admin", "User"]);
 
             // Act
-            var token = tokenService.GenerateToken(user);
-            var jwt = _handler.ReadJwtToken(token);
+            var token = sut.GenerateToken(user);
+            var jwt = TestContext.ReadToken(token);
 
             // Assert
+            // Verify claims
             jwt.Claims.Should().NotBeEmpty();
             jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Name)?.Value.Should().Be("test-full-name");
             jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.PreferredUsername)?.Value.Should().Be("test-user-name");
             jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Email)?.Value.Should().Be("user@test.com");
-            jwt.Claims.First(x => x.Type == ClaimTypes.Role).Value.Should().Be("Admin");
+
+            // Verify roles
+            var roleClaims = jwt.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
+            roleClaims.Should().ContainInOrder("Admin", "User");
         }
 
         [Fact]
         public void GenerateToken_Should_Set_Expiration_Correctly()
         {
             // Arrange
-            var tokenService = CreateTokenService();
-            var user = CreateUserInfoDto([]);
+            var sut = TestContext.CreateSut();
+            var user = TestContext.CreateUser();
 
             // Act
-            var token = tokenService.GenerateToken(user);
-            var jwt = _handler.ReadJwtToken(token);
+            var token = sut.GenerateToken(user);
+            var jwt = TestContext.ReadToken(token);
 
             // Assert
+            // Verify expiration time
             jwt.ValidTo.Should().BeCloseTo(DateTime.UtcNow.AddMinutes(60), TimeSpan.FromSeconds(5));
         }
 
@@ -81,15 +110,36 @@ namespace AuthService.UnitTests.Services
         public void GenerateToken_Should_Work_With_No_Roles()
         {
             // Arrange
-            var tokenService = CreateTokenService();
-            var user = CreateUserInfoDto([]);
+            var sut = TestContext.CreateSut();
+            var user = TestContext.CreateUser();
 
             // Act
-            var token = tokenService.GenerateToken(user);
-            var jwt = _handler.ReadJwtToken(token);
+            var token = sut.GenerateToken(user);
+            var jwt = TestContext.ReadToken(token);
 
             // Assert
             jwt.Claims.Any(c => c.Type == ClaimTypes.Role).Should().BeFalse();
+        }
+
+        [Fact]
+        public void GenerateToken_Should_Throw_ArgumentException_When_SecurityKey_Is_Too_Short()
+        {
+            // Arrange
+            var shortKeySettings = new JwtSettings
+            {
+                Issuer = "AuthTest",
+                Audience = "AuthTest",
+                Key = "SHORT_KEY", 
+                DurationInMinutes = 60
+            };
+            var sut = TestContext.CreateSut(shortKeySettings);
+            var user = TestContext.CreateUser();
+
+            // Act & Assert
+            // Token generation will throw an exception as the key does not meet the minimum length requirement
+            sut.Invoking(s => s.GenerateToken(user))
+               .Should().Throw<Exception>()
+               .WithMessage("*security key*");
         }
 
     }
