@@ -82,7 +82,7 @@ namespace AuthService.UnitTests.Controllers
         {
             // Arrange
             var request = new LoginRequestDto { Email = "user@test.com", Password = "Password1234!" };
-            var expectedResponse = new AuthResponseDto
+            var expectedResponse = new LoginResponseDto
             {
                 AccessToken = "test-token",
                 ExpiresAt = DateTime.UtcNow.AddMinutes(10),
@@ -101,10 +101,10 @@ namespace AuthService.UnitTests.Controllers
 
             // Verify body type
             var okResult = result.As<OkObjectResult>();
-            okResult.Value.Should().BeOfType<AuthResponseDto>();
+            okResult.Value.Should().BeOfType<LoginResponseDto>();
 
             // Verify DTO content
-            var responseDto = okResult.Value.As<AuthResponseDto>();
+            var responseDto = okResult.Value.As<LoginResponseDto>();
             responseDto.AccessToken.Should().Be(expectedResponse.AccessToken);
 
             // Verify login method have been called
@@ -119,7 +119,7 @@ namespace AuthService.UnitTests.Controllers
             var request = new LoginRequestDto { Email = "wrong@test.com", Password = "wrong" };
 
             _authServiceMock.Setup(s => s.LoginAsync(It.IsAny<LoginRequestDto>()))
-                .ReturnsAsync((AuthResponseDto?)null); // Retornar null
+                .ReturnsAsync((LoginResponseDto?)null); // Retornar null
 
             // Act
             var result = await _sut.LoginAsync(request);
