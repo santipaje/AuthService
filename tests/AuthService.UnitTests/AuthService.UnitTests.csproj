@@ -26,4 +26,10 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\AuthService.Api\AuthService.Api.csproj" />
+    <ProjectReference Include="..\..\src\AuthService.Application\AuthService.Application.csproj" />
+    <ProjectReference Include="..\..\src\AuthService.Infrastructure\AuthService.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>
