@@ -17,6 +17,6 @@ namespace AuthService.Application.Interfaces
         /// </summary>
         /// <param name="loginDto"></param>
         /// <returns></returns>
-        Task<AuthResponseDto?> LoginAsync(LoginRequestDto loginDto);
+        Task<LoginResponseDto?> LoginAsync(LoginRequestDto loginDto);
     }
 }
