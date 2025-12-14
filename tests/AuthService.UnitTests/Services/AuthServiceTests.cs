@@ -1,4 +1,5 @@
-﻿using AuthService.Application.DTOs;
+﻿using AuthService.Application.Common.Constants;
+using AuthService.Application.DTOs;
 using AuthService.Application.DTOs.Requests;
 using AuthService.Application.Interfaces;
 using AuthService.Application.Validators;
@@ -76,7 +77,7 @@ namespace AuthService.UnitTests.Services
 
         #endregion
 
-        // Register
+        #region Register
 
         [Fact]
         [Trait("Category", "Register")]
@@ -128,10 +129,12 @@ namespace AuthService.UnitTests.Services
 
             // Verify critic methods in the creation
             ctx.UserManagerMock.Verify(x => x.CreateAsync(It.Is<ApplicationUser>(u => u.Email == request.Email), request.Password), Times.Once);
-            ctx.UserManagerMock.Verify(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), "User"), Times.Once);
+            ctx.UserManagerMock.Verify(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), RoleNames.User), Times.Once);
         }
 
-        // Login
+        #endregion
+
+        #region Login
 
         [Fact]
         [Trait("Category", "Login")]
@@ -187,6 +190,8 @@ namespace AuthService.UnitTests.Services
             // Verify TokenService have been called
             ctx.TokenServiceMock.Verify(x => x.GenerateToken(It.Is<UserInfoDto>(u => u.Email == user.Email)), Times.Once);
         }
+
+        #endregion
 
     }
 }

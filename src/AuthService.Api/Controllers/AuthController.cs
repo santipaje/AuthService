@@ -22,7 +22,7 @@ namespace AuthService.Api.Controllers
         public async Task<IActionResult> RegisterAsync([FromBody] RegisterRequestDto registerDTO)
         {
             var registerResponse = await _authService.RegisterAsync(registerDTO);
-            if (!registerResponse.Succeeded) { return BadRequest(new { registerResponse.Errors }); }
+            if (!registerResponse.Succeeded) { return BadRequest(new ApiValidationErrorResponseDto(registerResponse.Errors)); }
             return CreatedAtAction(string.Empty, null);
         }
 
