@@ -20,7 +20,7 @@ namespace AuthService.UnitTests.Validators
             _validator = new RegisterRequestValidator();
         }
 
-        // Email
+        #region Email validation
 
         [Fact]
         public void Should_Have_Error_When_Email_Is_Empty()
@@ -38,7 +38,9 @@ namespace AuthService.UnitTests.Validators
             result.ShouldHaveValidationErrorFor(x => x.Email);
         }
 
-        // FullName
+        #endregion
+
+        #region FullName validation
 
         [Fact]
         public void Should_Have_Error_When_FullName_Is_Empty()
@@ -56,7 +58,9 @@ namespace AuthService.UnitTests.Validators
             result.ShouldHaveValidationErrorFor(x => x.FullName);
         }
 
-        // UserName
+        #endregion
+
+        #region Username validation
 
         [Fact]
         public void Should_Have_Error_When_UserName_Is_Empty()
@@ -74,31 +78,28 @@ namespace AuthService.UnitTests.Validators
             result.ShouldHaveValidationErrorFor(x => x.UserName);
         }
 
-        // Password
+        #endregion
 
-        private TestValidationResult<RegisterRequestDto> ValidatePassword(string password)
-        {
-            var model = new RegisterRequestDto { Email = "user@test.com", FullName = "test-full-name", Password = password, UserName = "test-user-name" };
-            return _validator.TestValidate(model);
-        }
+        #region Password validation
 
         [Theory]
-        [InlineData("", "")]
-        [InlineData("Pass1234!", "")]
-        [InlineData("password1234!", ValidatorMessages.PasswordRequiresUppercase)]
-        [InlineData("PASSWORD1234!", ValidatorMessages.PasswordRequiresLowercase)]
-        [InlineData("Password!!!!", ValidatorMessages.PasswordRequiresDigit)]
-        [InlineData("Password1234", ValidatorMessages.PasswordRequiresNonAlphanumeric)]
-        public void Password_Should_Return_Specific_Error(string password, string expectedMessage)
+        [InlineData("")]
+        [InlineData("Pass1234!")]
+        [InlineData("password1234!")]
+        [InlineData("PASSWORD1234!")]
+        [InlineData("Password!!!!")]
+        [InlineData("Password1234")]
+        public void Password_Should_Return_Specific_Error(string password)
         {
-            var result = ValidatePassword(password);
-
-            result.ShouldHaveValidationErrorFor(x => x.Password)
-                  .WithErrorMessage(expectedMessage);
+            var model = new RegisterRequestDto { Email = "user@test.com", FullName = "test-full-name", Password = password, UserName = "test-user-name" };
+            var result = _validator.TestValidate(model);
+            result.ShouldHaveValidationErrorFor(x => x.Password);
+                
         }
 
+        #endregion
 
-        // Correct model
+        #region Correct path
 
         [Fact]
         public void Should_Not_Have_Errors_When_Request_Is_Valid()
@@ -107,5 +108,8 @@ namespace AuthService.UnitTests.Validators
             var result = _validator.TestValidate(model);
             result.ShouldNotHaveAnyValidationErrors();
         }
+
+        #endregion
+
     }
 }

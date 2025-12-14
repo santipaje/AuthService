@@ -44,11 +44,11 @@ namespace AuthService.UnitTests.Controllers
 
             // Verify body type
             var badRequestResult = result.As<BadRequestObjectResult>();
-            badRequestResult.Value.Should().BeOfType<RegisterResponseDto>();
+            badRequestResult.Value.Should().BeOfType<ApiValidationErrorResponse>();
 
             // Verify DTO content
-            var actualResponseDto = badRequestResult.Value.As<RegisterResponseDto>();
-            actualResponseDto.Succeeded.Should().BeFalse();
+            var actualResponseDto = badRequestResult.Value.As<ApiValidationErrorResponse>();
+            actualResponseDto.Status.Should().Be(400);
             actualResponseDto.Errors.Should().Contain(ErrorMessages.EmailAlreadyRegistered);
 
             // Verify register method have been called

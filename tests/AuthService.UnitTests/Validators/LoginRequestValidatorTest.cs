@@ -17,7 +17,7 @@ namespace AuthService.UnitTests.Validators
             _validator = new LoginRequestValidator();
         }
 
-        // Email
+        #region Email validation
 
         [Fact]
         public void Should_Have_Error_When_Email_Is_Empty()
@@ -35,7 +35,9 @@ namespace AuthService.UnitTests.Validators
             result.ShouldHaveValidationErrorFor(x => x.Email);
         }
 
-        // Password
+        #endregion
+
+        #region Password validation
 
         [Fact]
         public void Should_Have_Error_When_Password_Is_Empty()
@@ -45,7 +47,9 @@ namespace AuthService.UnitTests.Validators
             result.ShouldHaveValidationErrorFor(x => x.Password);
         }
 
-        // Correct model
+        #endregion
+
+        #region Correct Path
 
         [Fact]
         public void Should_Not_Have_Errors_When_Request_Is_Valid()
@@ -54,5 +58,8 @@ namespace AuthService.UnitTests.Validators
             var result = _validator.TestValidate(model);
             result.ShouldNotHaveAnyValidationErrors();
         }
+
+        #endregion
+
     }
 }

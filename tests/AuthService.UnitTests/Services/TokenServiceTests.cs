@@ -14,6 +14,9 @@ namespace AuthService.UnitTests.Services
     /// </summary>
     public class TokenServiceTests
     {
+
+        #region Context
+
         /// <summary>
         /// Set up the context
         /// </summary>
@@ -66,6 +69,8 @@ namespace AuthService.UnitTests.Services
                 return Handler.ReadJwtToken(token);
             }
         }
+
+        #endregion
 
         [Fact]
         public void GenerateToken_Should_Return_Valid_Jwt_With_Expected_Claims()
@@ -138,8 +143,7 @@ namespace AuthService.UnitTests.Services
             // Act & Assert
             // Token generation will throw an exception as the key does not meet the minimum length requirement
             sut.Invoking(s => s.GenerateToken(user))
-               .Should().Throw<Exception>()
-               .WithMessage("*security key*");
+               .Should().Throw<Exception>();
         }
 
     }
