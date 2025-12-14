@@ -44,10 +44,10 @@ namespace AuthService.UnitTests.Controllers
 
             // Verify body type
             var badRequestResult = result.As<BadRequestObjectResult>();
-            badRequestResult.Value.Should().BeOfType<ApiValidationErrorResponse>();
+            badRequestResult.Value.Should().BeOfType<ApiValidationErrorResponseDto>();
 
             // Verify DTO content
-            var actualResponseDto = badRequestResult.Value.As<ApiValidationErrorResponse>();
+            var actualResponseDto = badRequestResult.Value.As<ApiValidationErrorResponseDto>();
             actualResponseDto.Status.Should().Be(400);
             actualResponseDto.Errors.Should().Contain(ErrorMessages.EmailAlreadyRegistered);
 

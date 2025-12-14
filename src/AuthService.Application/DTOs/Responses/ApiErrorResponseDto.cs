@@ -5,7 +5,7 @@ namespace AuthService.Application.DTOs.Responses
     /// <summary>
     /// API Error Response (Compliant with RFC 7807).
     /// </summary>
-    public class ApiErrorResponse
+    public class ApiErrorResponseDto
     {
         /// <summary>
         /// Unique reference that identifies the type of error.
@@ -37,7 +37,7 @@ namespace AuthService.Application.DTOs.Responses
         [JsonPropertyName("instance")]
         public string Instance { get; set; }
 
-        public ApiErrorResponse(int status, string title, string detail, string instance)
+        public ApiErrorResponseDto(int status, string title, string detail, string instance)
         {
             Status = status;
             Title = title;
@@ -50,7 +50,7 @@ namespace AuthService.Application.DTOs.Responses
     /// <summary>
     /// API Error response which includes the ocurred error list.
     /// </summary>
-    public class ApiValidationErrorResponse : ApiErrorResponse
+    public class ApiValidationErrorResponseDto : ApiErrorResponseDto
     {
         /// <summary>
         /// List of ocurred errors
@@ -58,7 +58,7 @@ namespace AuthService.Application.DTOs.Responses
         [JsonPropertyName("errors")]
         public IReadOnlyCollection<string> Errors { get; set; }
 
-        public ApiValidationErrorResponse(IReadOnlyCollection<string> errors, string instance = "")
+        public ApiValidationErrorResponseDto(IReadOnlyCollection<string> errors, string instance = "")
             : base(400, "Validation Error", "One or more validation errors have ocurred", instance)
         {
             Errors = errors;
