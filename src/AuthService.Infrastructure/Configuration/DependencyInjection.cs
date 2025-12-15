@@ -5,10 +5,12 @@ using AuthService.Infrastructure.Persistence;
 using AuthService.Infrastructure.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -25,10 +27,10 @@ namespace AuthService.Infrastructure.Configuration
         /// <param name="services"></param>
         /// <param name="configuration"></param>
         /// <returns></returns>
-        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration) 
+        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment) 
         {
             // Database Configuration
-            services.ConfigureDatabase(configuration);
+            services.ConfigureDatabase(configuration, environment);
 
             // Identity Configuration
             services.ConfigureIdentity(configuration);
@@ -71,8 +73,9 @@ namespace AuthService.Infrastructure.Configuration
         /// <summary>
         /// Database configuration
         /// </summary>
-        private static void ConfigureDatabase(this IServiceCollection services, IConfiguration configuration)
+        private static void ConfigureDatabase(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
         {
+            if (environment.IsEnvironment("IntegrationTests")) { return; }
             var connectionString = configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<AuthDbContext>(options => options.UseSqlServer(connectionString));
         }

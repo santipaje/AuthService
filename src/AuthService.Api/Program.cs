@@ -13,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.ConfigureSerilog(builder.Configuration);
 
 // Add Infrastrucute and DB configuration
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
 
 // Add Services
 builder.Services.AddApplicationServices();
@@ -95,3 +95,5 @@ finally
 {
     Log.CloseAndFlush();
 }
+
+public partial class Program { }
