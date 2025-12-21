@@ -3,6 +3,7 @@ using AuthService.Application.DTOs.Responses;
 using AuthService.IntegrationTests.Common;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -22,6 +23,7 @@ namespace AuthService.IntegrationTests.AuthTests
     public class AuthEndpointsTests : IClassFixture<CustomWebApplicationFactory<Program>>
     {
         private readonly HttpClient _client;
+        private readonly JwtSecurityTokenHandler _tokenHandler = new();
 
         public AuthEndpointsTests(CustomWebApplicationFactory<Program> factory)
         {
@@ -95,6 +97,28 @@ namespace AuthService.IntegrationTests.AuthTests
             loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
             authContent.Should().NotBeNull();
             authContent!.AccessToken.Should().NotBeNullOrEmpty();
+
+            // JWT validation
+            var jwt = _tokenHandler.ReadJwtToken(authContent.AccessToken);
+            jwt.Issuer.Should().NotBeNullOrEmpty();
+            jwt.Audiences.Should().NotBeEmpty();
+        }
+
+        [Fact]
+        public async Task Login_ShouldReturn401_WhenUserDoesNotExist()
+        {
+            // Arrange
+            var loginRequest = new LoginRequestDto
+            {
+                Email = "not@exists.com",
+                Password = "WrongPass1234!"
+            };
+
+            // Act
+            var response = await _client.PostAsJsonAsync(ApiRoutes.Auth.LoginUri, loginRequest);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [Fact]
@@ -103,7 +127,7 @@ namespace AuthService.IntegrationTests.AuthTests
             // Arrange
             var loginRequest = new LoginRequestDto
             {
-                Email = "not@exists.com",
+                Email = "loginuser@test.com",
                 Password = "WrongPass1234!"
             };
 
