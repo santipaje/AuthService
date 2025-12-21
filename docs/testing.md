@@ -18,7 +18,8 @@ The goal is to:
 Unit tests validate individual components in isolation, without involving HTTP resquest, database or the ASP.NET pipeline.
 
 #### Covered Components
-- Request Validators
+- Login Validator
+- Request Validator
 - TokenService
 - AuthService
 - AuthController
