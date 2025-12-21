@@ -70,7 +70,7 @@ namespace AuthService.UnitTests.Controllers
 
             // Assert
             // Verify HTTP response type (201 Created)
-            result.Should().BeOfType<CreatedAtActionResult>();
+            result.Should().BeOfType<CreatedResult>();
 
             // Verify register method have been called
             _authServiceMock.Verify(s => s.RegisterAsync(It.IsAny<RegisterRequestDto>()), Times.Once);

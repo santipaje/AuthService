@@ -36,7 +36,7 @@ namespace AuthService.Infrastructure.Services
             if (!validation.IsValid)
             {
                 Log.Warning("Registration validations failed: {Errors}", validation.Errors.Select(error => error.ErrorMessage));
-                throw new ValidationException(validation.Errors);
+                return new RegisterResponseDto() { Succeeded = false, Errors = [.. validation.Errors.Select(error => error.ErrorMessage)] };
             }
 
             var existing = await _userManager.FindByEmailAsync(registerDto.Email);
