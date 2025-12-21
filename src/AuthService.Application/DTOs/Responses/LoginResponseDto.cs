@@ -1,9 +1,9 @@
 ﻿namespace AuthService.Application.DTOs.Responses
 {
     /// <summary>
-    /// Auth Response DTO
+    /// Login Response DTO
     /// </summary>
-    public class AuthResponseDto
+    public class LoginResponseDto
     {
         public string AccessToken { get; init; } = string.Empty;
         public DateTime ExpiresAt { get; init; }

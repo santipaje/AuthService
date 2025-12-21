@@ -13,7 +13,7 @@ namespace AuthService.Application.Validators
                 .NotEmpty().WithMessage(ValidatorMessages.EmailRequired)
                 .EmailAddress().WithMessage(ValidatorMessages.InvalidEmailFormat);
             // Name
-            RuleFor(x => x.Name)
+            RuleFor(x => x.FullName)
                 .NotEmpty().WithMessage(ValidatorMessages.NameRequired)
                 .MinimumLength(2).WithMessage(ValidatorMessages.NameRequiresMinLenght);
 

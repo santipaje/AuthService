@@ -11,13 +11,22 @@ using Serilog;
 
 namespace AuthService.Infrastructure.Services
 {
-    public class AuthService(UserManager<ApplicationUser> userManager, ITokenService tokenService, IValidator<RegisterRequestDto> registerValidator, IValidator<LoginRequestDto> loginValidator, IOptions<JwtSettings> jwtSettings) : IAuthService
+    public class AuthService : IAuthService
     {
-        private readonly UserManager<ApplicationUser> _userManager = userManager;
-        private readonly ITokenService _tokenService = tokenService;
-        private readonly IValidator<RegisterRequestDto> _registerValidator = registerValidator;
-        private readonly IValidator<LoginRequestDto> _loginValidator = loginValidator;
-        private readonly JwtSettings _jwtSettings = jwtSettings.Value;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ITokenService _tokenService;
+        private readonly IValidator<RegisterRequestDto> _registerValidator;
+        private readonly IValidator<LoginRequestDto> _loginValidator;
+        private readonly JwtSettings _jwtSettings;
+
+        public AuthService(UserManager<ApplicationUser> userManager, ITokenService tokenService, IValidator<RegisterRequestDto> registerValidator, IValidator<LoginRequestDto> loginValidator, IOptions<JwtSettings> jwtSettings)
+        {
+            _userManager = userManager;
+            _tokenService = tokenService;
+            _registerValidator = registerValidator;
+            _loginValidator = loginValidator;
+            _jwtSettings = jwtSettings.Value;
+        }
 
         public async Task<RegisterResponseDto> RegisterAsync(RegisterRequestDto registerDto)
         {
@@ -27,7 +36,7 @@ namespace AuthService.Infrastructure.Services
             if (!validation.IsValid)
             {
                 Log.Warning("Registration validations failed: {Errors}", validation.Errors.Select(error => error.ErrorMessage));
-                throw new ValidationException(validation.Errors);
+                return new RegisterResponseDto() { Succeeded = false, Errors = [.. validation.Errors.Select(error => error.ErrorMessage)] };
             }
 
             var existing = await _userManager.FindByEmailAsync(registerDto.Email);
@@ -39,7 +48,7 @@ namespace AuthService.Infrastructure.Services
 
             var user = new ApplicationUser()
             {
-                FullName = registerDto.Name,
+                FullName = registerDto.FullName,
                 UserName = registerDto.UserName,
                 Email = registerDto.Email,
                 CreatedTime = DateTime.UtcNow,
@@ -61,7 +70,7 @@ namespace AuthService.Infrastructure.Services
             return new RegisterResponseDto() { Succeeded = true, Errors = [] };
         }
 
-        public async Task<AuthResponseDto?> LoginAsync(LoginRequestDto loginDto)
+        public async Task<LoginResponseDto?> LoginAsync(LoginRequestDto loginDto)
         {
             Log.Information("Login attempt for {Email}", loginDto.Email);
 
@@ -93,7 +102,7 @@ namespace AuthService.Infrastructure.Services
 
             Log.Information("Login successful for {Email}", loginDto.Email);
 
-            return new AuthResponseDto() { AccessToken = token, ExpiresAt = expiresAt, RefreshToken = string.Empty };
+            return new LoginResponseDto() { AccessToken = token, ExpiresAt = expiresAt, RefreshToken = string.Empty };
         }
     }
 }

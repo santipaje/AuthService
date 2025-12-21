@@ -13,9 +13,14 @@ namespace AuthService.Infrastructure.Services
     /// <summary>
     /// Token Service Implementation
     /// </summary>
-    public class TokenService(IOptions<JwtSettings> jwtSettings) : ITokenService
+    public class TokenService : ITokenService
     {
-        private readonly JwtSettings _jwtSettings = jwtSettings.Value;
+        private readonly JwtSettings _jwtSettings;
+
+        public TokenService(IOptions<JwtSettings> jwtSettings)
+        {
+            _jwtSettings = jwtSettings.Value;
+        }
 
         public string GenerateToken(UserInfoDto user)
         {
