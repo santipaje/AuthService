@@ -35,32 +35,53 @@ AuthService/</br>
 ### Prerequisites
 - Install [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 - Install [SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads)
-- Install EntityFramework tool
-```bash
-dotnet tool install --global dotnet-ef
-```
+- Install EntityFramework tool → `dotnet tool install --global dotnet-ef`
+- Install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
-## Setup
+## Setup Locally
  
-1. Clone the repository:
+1. **Clone the repository:**
 ```bash
 git clone https://github.com/santipaje/AuthService.git
 cd AuthService
 ```
 
-2. Apply migrations
+2. **Apply migrations**
 ```bash
 dotnet ef database update --project src/AuthService.Infrastructure
 ```
 
-3. Run Api:
+3. **Run Api:**
 ```bash
 dotnet run --project src/AuthService.Api
 ```
 
+## Setup with Docker
+
+1. **Config environment**
+Clone the example environment file and fill in the values:
+```bash
+cp .env.example .env
+```
+
+2. **Launch Containers**
+Build and start the services in detached mode:
+```bash
+docker-compose up -d --build
+```
+
+3. **Verify Status**
+Check if the containers are running and healthy:
+```bash
+docker ps
+```
+
+The AuthService API will be reachable at `http://localhost:5000` and the SQL Server at `localhost:1433`.
+
  ---
 
 ## 📚 Documentation
-[System Design](/docs/system-design.md)
-[Requirements](/docs/requirements.md)
-[Architecture Decision Records](/docs/adr/)
+[System Design](/docs/system-design.md)</br>
+[Requirements](/docs/requirements.md)</br>
+[Testing](/docs/testing.md)</br>
+[Architecture Decision Records](/docs/adr/)</br>
