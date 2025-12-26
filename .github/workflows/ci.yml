@@ -40,7 +40,7 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
           cache: true
-          cache-dependency-path: '**/packages.lock.json'
+          cache-dependency-path: 'AuthService.sln'
 
       - name: Restore dependencies
         run: dotnet restore AuthService.sln
