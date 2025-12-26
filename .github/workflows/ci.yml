@@ -1,0 +1,76 @@
+name: AuthService CI
+
+on:
+  push:
+    branches: [ "develop", "main" ]
+  pull_request:
+    branches: [ "develop" ]
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  IMAGE_NAME: authservice-api
+  
+jobs:
+  build-and-test:
+    name: Build, Test & Dockerize
+    runs-on: ubuntu-latest
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2025-latest
+        env:
+          MSSQL_SA_PASSWORD: ${{ secrets.MSSQL_SA_PASSWORD }}
+          ACCEPT_EULA: "Y"
+          MSSQL_PID: "Express"
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -C -Q 'SELECT 1' || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+          --health-start-period 10s
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache: true
+          cache-dependency-path: 'AuthService.sln'
+
+      - name: Restore dependencies
+        run: dotnet restore AuthService.sln
+
+      - name: Build Solution
+        run: dotnet build AuthService.sln --no-restore --configuration Release
+
+      - name: Run Unit Tests
+        run: dotnet test tests/AuthService.UnitTests --no-build --configuration Release
+
+      - name: Run Integrations Tests
+        env:
+          ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=AuthServiceDb;User Id=sa;Password=${{ secrets.MSSQL_SA_PASSWORD }};TrustServerCertificate=True;"
+        run: dotnet test tests/AuthService.IntegrationTests --no-build --configuration Release
+
+      - name: Login to Docker Hub
+        if: github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Set up Docker Buildx
+        if: github.ref == 'refs/heads/main'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Push Docker image
+        if: github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
