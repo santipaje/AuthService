@@ -102,9 +102,10 @@ The pipeline does the following steps:
 - Builds the solution
 - Runs unit tests
 - Runs integration tests with SQL Server
-- Builds and Pushes the Docker image
+- Builds the Docker image
+- Pushes the image in this [DockerHub repository](https://hub.docker.com/repositories/santipaje).
 
-All checks must pass before merging into `develop` and `main`, except for the docker image build and push step, which is only required in `main`.
+All checks must pass before merging into `develop` and `main`, except for the docker image build and push step, which is only required when pushing to `main`.
 
  ---
 
