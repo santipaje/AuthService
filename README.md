@@ -38,25 +38,27 @@ AuthService/</br>
 - Install EntityFramework tool → `dotnet tool install --global dotnet-ef`
 - Install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
-## Setup Locally
- 
-1. **Clone the repository:**
+## Setup
+
+**Clone the repository:**
 ```bash
 git clone https://github.com/santipaje/AuthService.git
 cd AuthService
 ```
 
-2. **Apply migrations**
+### Setup Locally
+
+1. **Apply migrations**
 ```bash
 dotnet ef database update --project src/AuthService.Infrastructure
 ```
 
-3. **Run Api:**
+2. **Run Api:**
 ```bash
 dotnet run --project src/AuthService.Api
 ```
 
-## Setup with Docker
+### Setup with Docker
 
 1. **Config environment**
 Clone the example environment file and fill in the values:
@@ -77,6 +79,32 @@ docker ps
 ```
 
 The AuthService API will be reachable at `http://localhost:5000` and the SQL Server at `localhost:1433`.
+
+---
+
+## Branching Strategy
+
+This repository follows a Git Flow inspired strategy:
+
+- feature/* → development work
+- docs/* → documentation work
+- bugfix/* → bug fixing
+- develop → integration branch
+- main → stable production-ready code
+
+---
+
+## CI/CD
+
+This project uses **GitHub Actions** to ensure code quality.
+
+The pipeline does the following steps:
+- Builds the solution
+- Runs unit tests
+- Runs integration tests with SQL Server
+- Builds and Pushes the Docker image
+
+All checks must pass before merging into `develop` and `main`, except for the docker image build and push step, which is only required in `main`.
 
  ---
 
